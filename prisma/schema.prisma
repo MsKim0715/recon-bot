@@ -11,3 +11,154 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model User {
+  id            String    @id @default(cuid())
+  discordId     String    @unique
+  username      String
+
+  riotGameName  String?
+  riotTagLine   String?
+  riotPuuid     String?   @unique
+
+  currentTier   Int?
+  tierName      String?
+  rr            Int?
+  winRate       Float?
+  kda           Float?
+  lastSyncedAt  DateTime?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  teamMembers   TeamMember[]
+  applications  ScrimApplication[]
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  leaderId    String
+
+  avgTier     Float?
+  avgTierName String?
+  avgWinRate  Float?
+  avgKda      Float?
+
+  noShowCount Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members     TeamMember[]
+  scrims      Scrim[]
+  homeMatches Match[]  @relation("HomeTeam")
+  awayMatches Match[]  @relation("AwayTeam")
+}
+
+model TeamMember {
+  id       String     @id @default(cuid())
+  teamId   String
+  userId   String
+  role     MemberRole @default(MEMBER)
+  joinedAt DateTime   @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+}
+
+model Scrim {
+  id          String      @id @default(cuid())
+  teamId      String
+  scheduledAt DateTime
+  description String?
+  minTier     Int?
+  maxTier     Int?
+  status      ScrimStatus @default(OPEN)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  team         Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  applications ScrimApplication[]
+  match        Match?
+}
+
+model ScrimApplication {
+  id      String            @id @default(cuid())
+  scrimId String
+  teamId  String
+  userId  String
+  message String?
+  status  ApplicationStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  scrim Scrim @relation(fields: [scrimId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([scrimId, teamId])
+}
+
+model Match {
+  id         String      @id @default(cuid())
+  scrimId    String      @unique
+  homeTeamId String
+  awayTeamId String
+  scheduledAt DateTime
+  status     MatchStatus @default(SCHEDULED)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  scrim    Scrim        @relation(fields: [scrimId], references: [id])
+  homeTeam Team         @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam Team         @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  result   MatchResult?
+}
+
+model MatchResult {
+  id          String @id @default(cuid())
+  matchId     String @unique
+  winnerId    String
+  loserId     String
+  homeScore   Int    @default(0)
+  awayScore   Int    @default(0)
+  submittedBy String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+}
+
+enum MemberRole {
+  LEADER
+  MEMBER
+}
+
+enum ScrimStatus {
+  OPEN
+  MATCHED
+  CLOSED
+  CANCELLED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+enum MatchStatus {
+  SCHEDULED
+  ONGOING
+  COMPLETED
+  NO_SHOW
+  CANCELLED
+}

@@ -1,13 +1,7 @@
 import { REST, Routes, SlashCommandBuilder } from "discord.js";
 import { env } from "@/env.js";
 import { logger } from "@/infra/logger.js";
-import { pingCommandDef } from "@/modules/ping/adapters/ping.command.js";
-
-
-
-const commands : SlashCommandBuilder[] =[
-    pingCommandDef
-]
+import { modules } from "./registry.js";
 
 
 const rest = new REST().setToken(env.DISCORD_TOKEN);
@@ -22,7 +16,7 @@ export async function deployCommands() {
                 env.DISCORD_CLIENT_ID,
                 env.DISCORD_GUILD_ID
             ),
-            {body : commands.map(c=> c.toJSON())}
+            {body : modules.map(m=> m.def.toJSON())}
         )
 
         logger.info('슬래시 커맨드 등록 완료');

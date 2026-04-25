@@ -14,12 +14,14 @@ datasource db {
 
 model User {
   id            String    @id @default(cuid())
-  discordId     String    @unique
+  discordId     String   
+  guildId       String 
   username      String
 
   riotGameName  String?
   riotTagLine   String?
   riotPuuid     String?   @unique
+  riotRegion  RiotRegion?
 
   currentTier   Int?
   tierName      String?
@@ -33,6 +35,9 @@ model User {
 
   teamMembers   TeamMember[]
   applications  ScrimApplication[]
+  sanctions Sanction[]
+
+  @@unique([discordId, guildId])
 }
 
 model Team {
@@ -136,6 +141,24 @@ model MatchResult {
   match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
 }
 
+model Sanction {
+  id String @id @default(cuid())
+  userId String
+  type SanctionType
+  reason String
+  duration Int?
+  expiresAt DateTime?
+  isActive Boolean @default(true)
+  issuedBy String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+}
+
+
 enum MemberRole {
   LEADER
   MEMBER
@@ -161,4 +184,19 @@ enum MatchStatus {
   COMPLETED
   NO_SHOW
   CANCELLED
+}
+
+enum SanctionType{
+  WARING
+  SUSPEND
+  BAN
+}
+
+enum RiotRegion{
+  AP
+  NA
+  EU
+  KR
+  BR
+  LATAM
 }

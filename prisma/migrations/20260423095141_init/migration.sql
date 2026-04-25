@@ -10,14 +10,22 @@ CREATE TYPE "ApplicationStatus" AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED', 'CAN
 -- CreateEnum
 CREATE TYPE "MatchStatus" AS ENUM ('SCHEDULED', 'ONGOING', 'COMPLETED', 'NO_SHOW', 'CANCELLED');
 
+-- CreateEnum
+CREATE TYPE "SanctionType" AS ENUM ('WARING', 'SUSPEND', 'BAN');
+
+-- CreateEnum
+CREATE TYPE "RiotRegion" AS ENUM ('AP', 'NA', 'EU', 'KR', 'BR', 'LATAM');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "discordId" TEXT NOT NULL,
+    "guildId" TEXT NOT NULL,
     "username" TEXT NOT NULL,
     "riotGameName" TEXT,
     "riotTagLine" TEXT,
     "riotPuuid" TEXT,
+    "riotRegion" "RiotRegion",
     "currentTier" INTEGER,
     "tierName" TEXT,
     "rr" INTEGER,
@@ -116,11 +124,27 @@ CREATE TABLE "MatchResult" (
     CONSTRAINT "MatchResult_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "User_discordId_key" ON "User"("discordId");
+-- CreateTable
+CREATE TABLE "Sanction" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "type" "SanctionType" NOT NULL,
+    "reason" TEXT NOT NULL,
+    "duration" INTEGER,
+    "expiresAt" TIMESTAMP(3),
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "issuedBy" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Sanction_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_riotPuuid_key" ON "User"("riotPuuid");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_discordId_guildId_key" ON "User"("discordId", "guildId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Team_name_key" ON "Team"("name");
@@ -163,3 +187,6 @@ ALTER TABLE "Match" ADD CONSTRAINT "Match_awayTeamId_fkey" FOREIGN KEY ("awayTea
 
 -- AddForeignKey
 ALTER TABLE "MatchResult" ADD CONSTRAINT "MatchResult_matchId_fkey" FOREIGN KEY ("matchId") REFERENCES "Match"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Sanction" ADD CONSTRAINT "Sanction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

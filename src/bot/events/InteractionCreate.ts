@@ -1,20 +1,15 @@
 import { logger } from "@/infra/logger.js";
 import { Interaction } from "discord.js";
-import { commandRouter } from "../routers/command.router.js";
+import { InteractionDispatcher } from "../dispatcher/interaction.dispatcher.js";
 
-export async function handleInteraction(interaction : Interaction) {
-   
-    try {
-        if(interaction.isChatInputCommand()){
-            logger.info({
-                command : interaction.commandName,
-                userId : interaction.user.id,
-                guildId : interaction.guildId
-            }, '커맨드 실행');
-            return await commandRouter.route(interaction.commandName,interaction);
+
+export function createInteractionHandler(router : InteractionDispatcher){
+    return async (interaction : Interaction) => {
+        try{
+            await router.dispatch(interaction);
         }
-        
-    }catch(e){
-        logger.error(e, '인터랙션 처리 오류');
+        catch(e){
+            logger.error(e, '인터랙션 처리 오류');
+        }
     }
 }

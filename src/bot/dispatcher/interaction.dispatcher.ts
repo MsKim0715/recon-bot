@@ -9,8 +9,9 @@ import { logger } from "@/infra/logger.js";
 
 type DispatcherRouters = {
     command : Router<ChatInputCommandInteraction>,
-  //  button : Router<ButtonInteraction>,
-   // modal :  Router<ModalSubmitInteraction>
+    modal :  Router<ModalSubmitInteraction>
+    button : Router<ButtonInteraction>,
+   
 }
 
 
@@ -35,35 +36,35 @@ export class InteractionDispatcher {
       );
     }
 
-    // if (interaction.isButton()) {
-    //   logger.info(
-    //     {
-    //       buttonId: interaction.customId,
-    //       userId: interaction.user.id,
+    if (interaction.isButton()) {
+      logger.info(
+        {
+          buttonId: interaction.customId,
+          userId: interaction.user.id,
           
-    //     },
-    //     "버튼 클릭",
-    //   );
-    //   return await this.buttonRouter.route(
-    //     interaction.customId,
-    //     interaction,
-    //   );
-    // }
+        },
+        "버튼 클릭",
+      );
+      return await this.routers.button.route(
+        interaction.customId,
+        interaction,
+      );
+    }
 
-    // if (interaction.isModalSubmit()) {
-    //   logger.info(
-    //     {
-    //       modalId: interaction.customId,
-    //       userId: interaction.user.id,
+    if (interaction.isModalSubmit()) {
+      logger.info(
+        {
+          modalId: interaction.customId,
+          userId: interaction.user.id,
           
-    //     },
-    //     "모달 제출",
-    //   );
-    //   return await this.modalRouter.route(
-    //     interaction.customId,
-    //     interaction,
-    //   );
-    // }
+        },
+        "모달 제출",
+      );
+      return await this.routers.modal.route(
+        interaction.customId,
+        interaction,
+      );
+    }
 
   }
 }

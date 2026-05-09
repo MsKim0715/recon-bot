@@ -18,26 +18,42 @@ model User {
   guildId       String 
   username      String
 
-  riotGameName  String?
-  riotTagLine   String?
-  riotPuuid     String?   @unique
-  riotRegion  RiotRegion?
-
-  currentTier   Int?
-  tierName      String?
-  rr            Int?
-  winRate       Float?
-  kda           Float?
-  lastSyncedAt  DateTime?
-
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+
+  riotAccount RiotAccount?
+
 
   teamMembers   TeamMember[]
   applications  ScrimApplication[]
   sanctions Sanction[]
+  teamApplications TeamApplication[]
 
   @@unique([discordId, guildId])
+}
+
+model RiotAccount {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  puuid     String     @unique
+  gameName  String
+  tagLine   String
+  region    RiotRegion
+
+  currentTier  Int?
+  tierName     String?
+  rr           Int?
+  winRate      Float?
+  kda          Float?
+  lastSyncedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
 }
 
 model Team {
@@ -47,10 +63,7 @@ model Team {
   description String?
   leaderId    String
 
-  avgTier     Float?
-  avgTierName String?
-  avgWinRate  Float?
-  avgKda      Float?
+
 
   noShowCount Int      @default(0)
 
@@ -59,11 +72,29 @@ model Team {
 
   members     TeamMember[]
   scrims      Scrim[]
+
   homeMatches Match[]  @relation("HomeTeam")
   awayMatches Match[]  @relation("AwayTeam")
+  teamApplication TeamApplication[]
 
   @@unique([name, guildId])
 }
+
+model TeamApplication {
+  id String @id @default(cuid())
+  teamId String
+  userId String
+  guildId  String
+  status ApplicationStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade )
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+}
+
 
 model TeamMember {
   id       String     @id @default(cuid())

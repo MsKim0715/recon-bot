@@ -2,7 +2,7 @@
 import { client } from './bot.client.js'
 import { InteractionDispatcher } from '../dispatcher/interaction.dispatcher.js'
 import { handleReady } from '../events/ready.js'
-import { commandEntries, modalEntries } from '../registry.js'
+import { buttonEntries, commandEntries, modalEntries } from '../registry.js'
 import { logger } from '@/infra/logger.js'
 import { createInteractionHandler } from '../events/interactionCreate.js'
 import { buttonRouter, commandRouter, modalRouter } from '../routers/routers.js'
@@ -21,6 +21,13 @@ function registerModals(){
     logger.debug({ id: entry.id }, '모달 등록')
   }
 }
+function registerButtons(){
+
+    for (const entry of buttonEntries) {
+    buttonRouter.register(entry.id, entry.handler);
+    logger.debug({ id: entry.id }, '버튼 등록');
+  }
+}
 
 function registerEvents() {
   const dispatcher = new InteractionDispatcher({
@@ -35,5 +42,6 @@ function registerEvents() {
 export function setupBot() {
   registerCommands();
   registerModals();
+  registerButtons();
   registerEvents();
 }

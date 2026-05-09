@@ -27,7 +27,7 @@ export function profileEmbed(
     fields : [
       {name : '닉네임', value : user.username, inline : true},
       {name : 'Riot 연동', value : user.isRiotLinked() ? 'Y' : 'N', inline :true},
-      {name : '티어', value : user.stats?.tierName ?? '미연동', inline : true},
+      {name : '티어', value : user.tierName ?? '미연동', inline : true},
     ]
   })
 }

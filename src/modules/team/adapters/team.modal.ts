@@ -2,7 +2,7 @@ import { ModalSubmitInteraction, MessageFlags } from "discord.js";
 import { Handler } from "@/bot/routers/base.router.js";
 import { TeamService } from "../domain/team.service.js";
 import { teamCreatedEmbed } from "./team.embed.js";
-import { AppError } from "@/shared/errors/index.js";
+import { handleError } from "@/shared/errors/handle-error.js";
 
 
 export class TeamModal{
@@ -26,12 +26,7 @@ export class TeamModal{
                         flags : MessageFlags.Ephemeral
                     })
                 } catch (e) {
-                    if(e instanceof AppError){
-                        await interaction.reply({
-                            content : `${e.message}`,
-                            flags : MessageFlags.Ephemeral
-                        })
-                    }
+                  await handleError(interaction, e);
                 }
             }
         }

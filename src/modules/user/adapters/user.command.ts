@@ -9,6 +9,7 @@ import { UserService } from '../domain/user.service.js';
 import { AppError } from '@/shared/errors/index.js';
 import { buildRegisterModal } from './user.modal-ui.js';
 import { profileEmbed } from './user.embed.js';
+import { handleError } from '@/shared/errors/handle-error.js';
 
 //커맨드 정의
 export const userRegisterCommandDef = new SlashCommandBuilder()
@@ -69,12 +70,7 @@ export class UserCommand {
                         flags : MessageFlags.Ephemeral
                     })
                 }catch(e){
-                    if(e instanceof AppError){
-                        await interaction.reply({
-                            content : `${e.message}`,
-                            flags : MessageFlags.Ephemeral
-                        });
-                    }
+                    handleError(interaction, e);
                 }
             }
         }
@@ -94,12 +90,7 @@ export class UserCommand {
                         flags : MessageFlags.Ephemeral
                     });
                 }catch(e){
-                    if( e instanceof AppError){
-                        await interaction.reply({
-                            content : `${e.message}`,
-                            flags : MessageFlags.Ephemeral
-                        });
-                    }
+                    handleError(interaction,e);
                 }
             }
         }

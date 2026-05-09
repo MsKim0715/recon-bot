@@ -4,8 +4,8 @@ import {
 } from 'discord.js';
 import { Handler } from '@/bot/routers/base.router.js';
 import { UserService } from '../domain/user.service.js';
-import { AppError } from '@/shared/errors/index.js';
 import { registerSuccessEmbed } from './user.embed.js';
+import { handleError } from '@/shared/errors/handle-error.js';
 
 
 export class UserModal{
@@ -31,12 +31,7 @@ export class UserModal{
                     })
                     
                 }catch(e){
-                    if(e instanceof AppError){
-                        await interaction.reply({
-                            content : `${e.message}`,
-                            flags: MessageFlags.Ephemeral
-                        });
-                    }
+                    handleError(interaction, e);
                 }
                 
             }

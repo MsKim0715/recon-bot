@@ -34,6 +34,12 @@ export class ExternalAPIError extends AppError{
 
 export class DuplicateError extends AppError{
     constructor(resource : string){
-        super(`${resource}이(가) 이미 존재합니다.`,'DUPLICATE');
+        super(resource,'DUPLICATE');
+    }
+}
+
+export class UnregisterError extends AppError {
+    constructor() {
+        super('회원 가입이 필요합니다. /회원가입 으로 먼저 가입해주세요','UNREGISTERED');
     }
 }

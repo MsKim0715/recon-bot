@@ -13,7 +13,19 @@ export class Router<T extends RepliableInteraction> {
   }
 
   async route(id: string, interaction: T) {
-    const handler = this.map.get(id);
+    let handler = this.map.get(id);
+
+
+
+    if(!handler) {
+      for(const [key, value] of this.map.entries()){
+        if(id.startsWith(key)){
+          handler = value
+          break;
+        }
+      }
+    }
+
 
     if (!handler) {
       logger.warn({ id }, "알 수 없는 핸들러");

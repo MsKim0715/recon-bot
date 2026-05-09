@@ -4,6 +4,7 @@ import {
   buildSuccessEmbed,
   buildInfoEmbed,
 } from "@/shared/embed/embed.builder.js";
+import { TeamApplicationData } from "../ports/team.repository.port.js";
 
 export function teamCreatedEmbed(discordUser: DiscordUser, team: Team) {
   return buildSuccessEmbed(discordUser, {
@@ -41,5 +42,29 @@ export function teamProfileEmbed(team: Team) {
         inline: true,
       },
     ],
+  });
+}
+
+export function teamListEmbed(teams: Team[]) {
+  return buildInfoEmbed({
+    title: "팀 목록",
+    description: teams.length === 0 ? "등록된 팀이 없습니다" : undefined,
+    fields: teams.map((team) => ({
+      name: team.name,
+      value: team.description ?? "설명 없음",
+      inline: false,
+    })),
+  });
+}
+
+export function teamApplicationsEmBed(applications: TeamApplicationData[]) {
+  return buildInfoEmbed({
+    title: "팀 가입 신청 목록",
+    description: applications.length === 0 ? "신청이 없습니다" : undefined,
+    fields: applications.map((app) => ({
+      name: `유저 ID: ${app.userId}`,
+      value: `신청일: ${app.createdAt.toLocaleDateString()}`,
+      inline: false,
+    })),
   });
 }

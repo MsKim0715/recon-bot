@@ -1,11 +1,11 @@
-import { MessageFlags, RepliableInteraction } from "discord.js";
-import { logger } from "@/infra/logger.js";
+import { BaseInteraction, MessageFlags } from 'discord.js';
+import { logger } from '@/infra/logger.js';
 
 export interface Handler<T> {
   handle(interaction: T): Promise<void>;
 }
 
-export class Router<T extends RepliableInteraction> {
+export class Router<T> {
   private map = new Map<string, Handler<T>>();
 
   register(id: string, handler: Handler<T>) {
@@ -15,28 +15,32 @@ export class Router<T extends RepliableInteraction> {
   async route(id: string, interaction: T) {
     let handler = this.map.get(id);
 
-
-
-    if(!handler) {
-      for(const [key, value] of this.map.entries()){
-        if(id.startsWith(key)){
-          handler = value
+    if (!handler) {
+      for (const [key, value] of this.map.entries()) {
+        if (id.startsWith(key)) {
+          handler = value;
           break;
         }
       }
     }
 
-
     if (!handler) {
-      logger.warn({ id }, "알 수 없는 핸들러");
-      
+      logger.warn({ id }, '알 수 없는 핸들러');
+
+      if (
+        interaction instanceof BaseInteraction &&
+        interaction.isRepliable() &&
+        !interaction.replied &&
+        !interaction.deferred
+      ) {
         await interaction.reply({
-          content: "처리할 수 없는 요청입니다",
-          flags : MessageFlags.Ephemeral
+          content: '처리할 수 없는 요청입니다',
+          flags: MessageFlags.Ephemeral
         });
-      
+      }
       return;
     }
+
     await handler.handle(interaction);
   }
 }

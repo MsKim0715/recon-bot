@@ -1,4 +1,5 @@
-import { RiotAccount } from "@/modules/riot/domain/value-objects/riot-account.value-object.js";
+import { RiotAccount } from "../domain/riot.entity.js";
+
 
 
 export interface RiotRepositoryPort{

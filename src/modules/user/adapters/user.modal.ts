@@ -4,8 +4,8 @@ import {
 } from 'discord.js';
 import { Handler } from '@/bot/routers/base.router.js';
 import { UserService } from '../domain/user.service.js';
-import { registerSuccessEmbed } from './user.embed.js';
 import { handleError } from '@/shared/errors/handle-error.js';
+import { registerSuccessComponents } from './user.components.js';
 
 
 export class UserModal{
@@ -26,8 +26,8 @@ export class UserModal{
 
 
                     await interaction.reply({
-                        embeds : [registerSuccessEmbed(interaction.user,nickname)],
-                        flags : MessageFlags.Ephemeral
+                        components : [registerSuccessComponents(interaction.user,nickname)],
+                        flags : MessageFlags.Ephemeral | MessageFlags.IsComponentsV2
                     })
                     
                 }catch(e){

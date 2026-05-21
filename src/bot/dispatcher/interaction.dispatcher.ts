@@ -3,6 +3,7 @@ import {
   ChatInputCommandInteraction,
   ButtonInteraction,
   ModalSubmitInteraction,
+  AutocompleteInteraction,
 } from "discord.js";
 import { Router } from "../routers/base.router.js";
 import { logger } from "@/infra/logger.js";
@@ -11,6 +12,7 @@ type DispatcherRouters = {
     command : Router<ChatInputCommandInteraction>,
     modal :  Router<ModalSubmitInteraction>
     button : Router<ButtonInteraction>,
+    autocomplete: Router<AutocompleteInteraction>;
    
 }
 
@@ -35,6 +37,23 @@ export class InteractionDispatcher {
         interaction,
       );
     }
+
+ if (interaction.isAutocomplete()) {
+      logger.info(
+        {
+          command: interaction.commandName,
+          userId: interaction.user.id,
+          guildId: interaction.guildId,
+        },
+        'autocomplete 실행',
+      );
+      return await this.routers.autocomplete.route(
+        interaction.commandName,
+        interaction,
+      );
+    }
+
+
 
     if (interaction.isButton()) {
       logger.info(

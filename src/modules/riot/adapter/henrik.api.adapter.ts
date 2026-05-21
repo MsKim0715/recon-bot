@@ -20,9 +20,11 @@ interface HenrikAccountResponse {
 interface HenrikRankResponse {
   status: number;
   data: {
-    currenttier: number;
-    currenttierpatched: string;
-    ranking_in_tier: number;
+    current_data: {
+      currenttier: number;
+      currenttierpatched: string;
+      ranking_in_tier: number;
+    };
   };
 }
 
@@ -72,8 +74,9 @@ export class henrikApiApdater implements RiotApiPort {
 
       if (res.status !== 200) return null;
 
-      const { currenttier, currenttierpatched, ranking_in_tier } = res.data;
+      const { currenttier, currenttierpatched, ranking_in_tier } = res.data.current_data;
 
+      console.log("rankResponse :", JSON.stringify(res, null, 2));
       return {
         currentTier: currenttier,
         tierName: currenttierpatched,

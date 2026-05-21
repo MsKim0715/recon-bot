@@ -1,0 +1,59 @@
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  MessageFlags
+} from 'discord.js';
+import { COMMANDS } from '@/bot/constants/commands.js';
+import { Handler } from '@/bot/routers/base.router.js';
+import { RiotService } from '../domain/riot.service.js';
+import { buildLinkModal } from './riot.modal-ui.js';
+import { riotStatsEmbed } from './riot.embed.js';
+import { handleError } from '@/shared/errors/handle-error.js';
+
+export const riotLinkCommandDef = new SlashCommandBuilder()
+  .setName(COMMANDS.VALORANT_LINK)
+  .setDescription('Link your Riot account')
+  .setNameLocalizations({ ko: '계정연동' })
+  .setDescriptionLocalizations({ ko: 'Riot 계정을 연동합니다' });
+
+
+export const riotViewCommandDef = new SlashCommandBuilder()
+  .setName(COMMANDS.VALORANT_VIEW)
+  .setDescription('View your Valorant stats')
+  .setNameLocalizations({ ko: '전적조회' })
+  .setDescriptionLocalizations({ ko: '발로란트 전적을 조회합니다' });
+
+export class RiotCommand {
+  constructor(private readonly riotService: RiotService) {}
+
+  get link(): Handler<ChatInputCommandInteraction> {
+    return {
+      handle: async (interaction: ChatInputCommandInteraction) => {
+        await interaction.showModal(buildLinkModal());
+      }
+    };
+  }
+
+
+  get view(): Handler<ChatInputCommandInteraction> {
+    return {
+      handle: async (interaction: ChatInputCommandInteraction) => {
+        try {
+
+          await interaction.deferReply({ flags : MessageFlags.Ephemeral});
+          const account = await this.riotService.getAccount(
+            interaction.user.id,
+            interaction.guildId!,
+          );
+
+          await interaction.editReply({
+            embeds: [riotStatsEmbed(interaction.user, account)],
+         
+          });
+        } catch (e) {
+          await handleError(interaction, e);
+        }
+      }
+    };
+  }
+}

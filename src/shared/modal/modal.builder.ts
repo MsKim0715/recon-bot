@@ -10,7 +10,8 @@ export type TextInputOptions = {
     placeholder? : string,
     required? : boolean,
     maxLength? : number,
-    minLength? : number
+    minLength? : number,
+    value? : string,
 }
 
 export function buildTextInput(
@@ -23,7 +24,7 @@ export function buildTextInput(
     .setCustomId(customId)
     .setStyle(options.style ?? TextInputStyle.Short)
     .setRequired(options.required ?? true)
-    .setValue('');
+    .setValue(options.value ?? '');
 
     if(options.placeholder) input.setPlaceholder(options.placeholder);
     if(options.maxLength) input.setMaxLength(options.maxLength);

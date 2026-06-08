@@ -1,28 +1,21 @@
-
-
 export class User {
   constructor(
     public readonly id: string,
     public readonly discordId: string,
     public readonly guildId: string,
     public readonly username: string,
-    public readonly isLinked : boolean  = false,
-    public readonly lastSyncedAt : Date | null = null,
-    public readonly tierName : string | null = null,
-    
-
+    public readonly isLinked: boolean = false,
+    public readonly lastSyncedAt: Date | null = null,
+    public readonly tierName: string | null = null,
   ) {}
 
-   isRiotLinked(): boolean {
+  isRiotLinked(): boolean {
     return this.isLinked;
   }
 
-
   canSync(): boolean {
-    if(!this.lastSyncedAt) return false;
+    if (!this.lastSyncedAt) return true;
     const diff = Date.now() - this.lastSyncedAt.getTime();
-    return diff >1000 * 60 *30;
+    return diff > 1000 * 60 * 30;
   }
-
-
 }

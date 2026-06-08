@@ -65,7 +65,7 @@ export const teamKickCommandDef = new SlashCommandBuilder()
   .setNameLocalizations({ ko: "팀원추방" })
   .setDescriptionLocalizations({ ko: "팀원을 추방합니다" })
   .addStringOption((option) =>
-    option.setName("user").setDescription("추방할 팀원").setRequired(true).setAutocomplete(true)
+    option.setName("member").setDescription("추방할 팀원").setRequired(true).setAutocomplete(true)
   );
 
 export const teamLeaveCommandDef = new SlashCommandBuilder()
@@ -157,22 +157,25 @@ export class TeamCommand {
   }
 
   get list(): Handler<ChatInputCommandInteraction> {
-    return {
-      handle: async (interaction: ChatInputCommandInteraction) => {
-        try {
-          const teams = await this.teamService.findAllByGuildId(
-            interaction.guildId!,
-          );
-          await interaction.reply({
-            flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
-            components: [teamListComponents(teams)],
-          });
-        } catch (e) {
-          await handleError(interaction, e);
-        }
-      },
-    };
-  }
+  return {
+    handle: async (interaction: ChatInputCommandInteraction) => {
+      try {
+        const teams = await this.teamService.findAllByGuildId(
+          interaction.guildId!
+        );
+
+        const { containers, row } = teamListComponents(teams, 0);
+
+        await interaction.reply({
+          flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
+          components: [...containers, row],
+        });
+      } catch (e) {
+        await handleError(interaction, e);
+      }
+    }
+  };
+}
 
   get join(): Handler<ChatInputCommandInteraction> {
     return {
@@ -238,28 +241,28 @@ export class TeamCommand {
     };
   }
 
-  get kick(): Handler<ChatInputCommandInteraction> {
-    return {
-      handle: async (interaction: ChatInputCommandInteraction) => {
-        try {
-          const targetUser = interaction.options.getUser("user", true);
+get kick(): Handler<ChatInputCommandInteraction> {
+  return {
+    handle: async (interaction: ChatInputCommandInteraction) => {
+      try {
+        const targetUserId = interaction.options.getString('member', true);
 
-          await this.teamService.kickMember(
-            interaction.user.id,
-            interaction.guildId!,
-            targetUser.id,
-          );
+        await this.teamService.kickMember(
+          interaction.user.id,
+          interaction.guildId!,
+          targetUserId
+        );
 
-          await interaction.reply({
-            content: ` ${targetUser.username} 님을 팀에서 추방했습니다`,
-            flags: MessageFlags.Ephemeral,
-          });
-        } catch (e) {
-          await handleError(interaction, e);
-        }
-      },
-    };
-  }
+        await interaction.reply({
+          content: '팀원을 추방했습니다',
+          flags: MessageFlags.Ephemeral
+        });
+      } catch (e) {
+        await handleError(interaction, e);
+      }
+    }
+  };
+}
 
   get leave(): Handler<ChatInputCommandInteraction> {
     return {

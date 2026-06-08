@@ -16,7 +16,7 @@ export class PrismaRiotRepository implements RiotRepositoryPort {
     return this.toEntity(data);
   }
   async save(userId: string, account: RiotAccount): Promise<void> {
-     await prisma.riotAccount.create({
+    await prisma.riotAccount.create({
       data: {
         userId,
         puuid: account.puuid,
@@ -29,7 +29,7 @@ export class PrismaRiotRepository implements RiotRepositoryPort {
         winRate: account.winRate,
         kda: account.kda,
         lastSyncedAt: account.lastSyncedAt,
-      }
+      },
     });
   }
   async update(userId: string, account: RiotAccount): Promise<void> {
@@ -46,11 +46,22 @@ export class PrismaRiotRepository implements RiotRepositoryPort {
         winRate: account.winRate,
         kda: account.kda,
         lastSyncedAt: account.lastSyncedAt,
-      }
+      },
     });
   }
   async delete(userId: string): Promise<void> {
-    await prisma.riotAccount.delete({where : { userId}});
+    await prisma.riotAccount.delete({ where: { userId } });
+  }
+
+  async resolveUserId(
+    discordId: string,
+    guildId: string,
+  ): Promise<string | null> {
+    const user = await prisma.user.findUnique({
+      where: { discordId_guildId: { discordId, guildId } },
+      select: { id: true },
+    });
+    return user?.id ?? null;
   }
   private toEntity(data: PrismaRiotAccount): RiotAccount {
     return new RiotAccount(

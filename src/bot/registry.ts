@@ -37,6 +37,8 @@ import {
   riotViewCommandDef,
 } from "@/modules/riot/adapter/riot.command.js";
 import { buildRiotModule } from "./builders/riot.builder.js";
+import { scrimCreateCommandDef, scrimListCommandDef, scrimApplyCommandDef, scrimPendingCommandDef, scrimCloseCommandDef, scrimCancelCommandDef, scrimApplyCancelCommandDef } from "@/modules/scrim/adapter/scrim.command.js";
+import { buildScrimModule } from "./builders/scrim.builder.js";
 
 export type CommandEntry = {
   name: CommandName;
@@ -51,6 +53,7 @@ export type AutocompleteEntry = {
 
 const userModule = buildUserModule();
 const teamModule = buildTeamModule();
+export const scrimModule = buildScrimModule();
 const riotModule = buildRiotModule();
 
 export const commandEntries: CommandEntry[] = [
@@ -75,6 +78,15 @@ export const commandEntries: CommandEntry[] = [
   { name: COMMANDS.TEAM_UPDATE,      def: teamUpdateCommandDef,   handler: teamModule.command.update },
   { name: COMMANDS.TEAM_CANCEL,      def: teamCancelCommandDef,   handler: teamModule.command.cancel },
 
+  //스크림
+  { name: COMMANDS.SCRIM_CREATE,  def: scrimCreateCommandDef,  handler: scrimModule.command.create },
+  { name: COMMANDS.SCRIM_LIST,    def: scrimListCommandDef,    handler: scrimModule.command.list },
+  { name: COMMANDS.SCRIM_APPLY,   def: scrimApplyCommandDef,   handler: scrimModule.command.apply },
+  { name: COMMANDS.SCRIM_PENDING, def: scrimPendingCommandDef, handler: scrimModule.command.pending },
+  { name: COMMANDS.SCRIM_CLOSE,   def: scrimCloseCommandDef,   handler: scrimModule.command.close },
+  { name: COMMANDS.SCRIM_CANCEL,  def: scrimCancelCommandDef,  handler: scrimModule.command.cancel },
+  { name: COMMANDS.SCRIM_APPLY_CANCEL, def: scrimApplyCancelCommandDef,  handler: scrimModule.command.applyCancel },
+
   // 발로란트
   { name: COMMANDS.VALORANT_LINK, def: riotLinkCommandDef, handler: riotModule.command.link },
   { name: COMMANDS.VALORANT_VIEW, def: riotViewCommandDef, handler: riotModule.command.view },
@@ -84,14 +96,32 @@ export const modalEntries = [
   { id: MODALS.MEMBER_REGISTER, handler: userModule.modal.register },
   { id: MODALS.TEAM_CREATE, handler: teamModule.modal.create },
   { id: MODALS.TEAM_UPDATE, handler: teamModule.modal.update },
+  { id: MODALS.SCRIM_CREATE, handler: scrimModule.modal.create },
+  { id: MODALS.SCRIM_APPLY,  handler: scrimModule.modal.apply },
   { id: MODALS.VALORANT_LINK, handler: riotModule.modal.link },
 ];
 
 export const buttonEntries = [
   { id: BUTTONS.TEAM_APPLICATION_ACCEPT, handler: teamModule.button.accept },
   { id: BUTTONS.TEAM_APPLICATION_REJECT, handler: teamModule.button.reject },
+  { id: BUTTONS.TEAM_LIST,               handler: teamModule.button.listPage }, 
+  { id: BUTTONS.SCRIM_LIST,              handler: scrimModule.button.listPage },
+  { id: BUTTONS.SCRIM_ACCEPT,            handler: scrimModule.button.accept },
+  { id: BUTTONS.SCRIM_REJECT,            handler: scrimModule.button.reject },
 ];
 
 export const autocompleteEntries: AutocompleteEntry[] = [
-  { name: COMMANDS.TEAM_KICK, handler: teamModule.command.kickAutocomplete },
+  { name: COMMANDS.TEAM_KICK,          handler: teamModule.command.kickAutocomplete },
+  // 전체 OPEN 스크림
+  { name: COMMANDS.SCRIM_APPLY,        handler: scrimModule.command.scrimAutocomplete },
+  // 자신의 스크림
+  { name: COMMANDS.SCRIM_PENDING,      handler: scrimModule.command.myScrimAutocomplete },
+  { name: COMMANDS.SCRIM_CLOSE,        handler: scrimModule.command.myScrimAutocomplete },
+  { name: COMMANDS.SCRIM_CANCEL,       handler: scrimModule.command.myScrimAutocomplete },
+  // 자신이 신청한 스크림
+  { name: COMMANDS.SCRIM_APPLY_CANCEL, handler: scrimModule.command.myApplicationAutocomplete },
 ];
+
+export const schedulerModules = {
+  scrim: scrimModule.scheduler,
+};

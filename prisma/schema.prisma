@@ -26,7 +26,6 @@ model User {
 
 
   teamMembers   TeamMember[]
-  applications  ScrimApplication[]
   sanctions Sanction[]
   teamApplications TeamApplication[]
 
@@ -62,6 +61,7 @@ model Team {
   guildId     String
   description String?
   leaderId    String
+  maxMembers  Int @default(5)
 
 
 
@@ -76,6 +76,7 @@ model Team {
   homeMatches Match[]  @relation("HomeTeam")
   awayMatches Match[]  @relation("AwayTeam")
   teamApplication TeamApplication[]
+  scrimApplications ScrimApplication[]
 
   @@unique([name, guildId])
 }
@@ -111,7 +112,9 @@ model TeamMember {
 
 model Scrim {
   id          String      @id @default(cuid())
+  number      Int   //서버 내 순차 번호
   teamId      String
+  guildId     String
   scheduledAt DateTime
   description String?
   minTier     Int?
@@ -124,13 +127,14 @@ model Scrim {
   team         Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
   applications ScrimApplication[]
   match        Match?
+
+    @@unique([number, guildId])
 }
 
 model ScrimApplication {
   id      String            @id @default(cuid())
   scrimId String
   teamId  String
-  userId  String
   message String?
   status  ApplicationStatus @default(PENDING)
 
@@ -138,7 +142,7 @@ model ScrimApplication {
   updatedAt DateTime @updatedAt
 
   scrim Scrim @relation(fields: [scrimId], references: [id], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id])
+  team  Team  @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   @@unique([scrimId, teamId])
 }

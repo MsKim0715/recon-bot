@@ -38,16 +38,17 @@ export interface TeamRepositoryPort {
   save(team: Team): Promise<void>;
   update(id: string, team: Team): Promise<void>;
   delete(id: string): Promise<void>;
-  addMember(teamId: string, userId: string): Promise<void>;
-  removeMember(teamId: string, userId: string): Promise<void>;
-  isMember(teamId: string, userId: string): Promise<boolean>;
+  isMember(teamId: string, discordId: string): Promise<boolean>;
+  removeMember(teamId: string, discordId: string, guildId: string): Promise<void>;
   countMembers(teamId: string): Promise<number>;
-  isMemberOfAnyTeam(userId: string, guildId: string): Promise<boolean>;
+  isMemberOfAnyTeam(discordId: string, guildId: string): Promise<boolean>;
   hasActiveScrim(teamId: string): Promise<boolean>;
-  updateMemberRole(teamId: string, userId: string, role: 'LEADER' | 'MEMBER'): Promise<void>;
-  createApplication(teamId: string, userId: string, guildId: string): Promise<void>;
+  transferLeaderTx(teamId: string, currentLeaderDiscordId: string, newLeaderDiscordId: string, guildId: string): Promise<void>;
+  acceptApplicationTx(teamId: string, applicantDiscordId: string, guildId: string): Promise<void>;
+  leaveTeamByDiscordId(discordId: string, guildId: string): Promise<void>;
+  createApplication(teamId: string, discordId: string, guildId: string): Promise<void>;
   findApplications(teamId: string): Promise<TeamApplicationData[]>;
-  findApplication(teamId: string, userId: string): Promise<TeamApplicationData | null>;
-  updateApplicationStatus(teamId: string, userId: string, status: ApplicationStatus): Promise<void>;
-  existsApplication(teamId: string, userId: string): Promise<boolean>;
+  findApplication(teamId: string, discordId: string): Promise<TeamApplicationData | null>;
+  updateApplicationStatus(teamId: string, discordId: string, status: ApplicationStatus): Promise<void>;
+  existsApplication(teamId: string, discordId: string): Promise<boolean>;
 }

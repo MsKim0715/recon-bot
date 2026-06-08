@@ -1,6 +1,6 @@
 import { prisma } from '@/infra/database.js';
 import { User } from '../domain/user.entity.js';
-import { UserRepositoryPort } from '../ports/user.repository.port.js'; 
+import { UserRepositoryPort } from '../ports/user.repository.port.js';
 import { User as PrismaUser, RiotAccount as PrismaRiotAccount } from '@/generated/prisma/index.js';
 
 export class PrismaUserRepository implements UserRepositoryPort {
@@ -8,7 +8,6 @@ export class PrismaUserRepository implements UserRepositoryPort {
   async findByDiscordId(discordId: string, guildId: string): Promise<User | null> {
     const data = await prisma.user.findUnique({
       where: { discordId_guildId: { discordId, guildId } },
-    
       include: { riotAccount: true }
     });
     if (!data) return null;
@@ -18,8 +17,6 @@ export class PrismaUserRepository implements UserRepositoryPort {
   async findById(id: string): Promise<User | null> {
     const data = await prisma.user.findUnique({
       where: { id },
-     
-    
       include: { riotAccount: true }
     });
     if (!data) return null;
@@ -58,7 +55,6 @@ export class PrismaUserRepository implements UserRepositoryPort {
       where: { discordId_guildId: { discordId, guildId } }
     });
   }
-
 
   private toEntity(
     data: PrismaUser & { riotAccount: PrismaRiotAccount | null }

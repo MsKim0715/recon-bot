@@ -19,9 +19,10 @@ export const riotLinkCommandDef = new SlashCommandBuilder()
 
 export const riotViewCommandDef = new SlashCommandBuilder()
   .setName(COMMANDS.VALORANT_VIEW)
-  .setDescription('View your Valorant stats')
+  .setDescription('View your Valorant stats') 
   .setNameLocalizations({ ko: '전적조회' })
   .setDescriptionLocalizations({ ko: '발로란트 전적을 조회합니다' });
+  console.log("ee");
 
 export class RiotCommand {
   constructor(private readonly riotService: RiotService) {}

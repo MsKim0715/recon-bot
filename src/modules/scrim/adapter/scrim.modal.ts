@@ -2,9 +2,10 @@ import { ModalSubmitInteraction, MessageFlags } from 'discord.js';
 import { Handler } from '@/bot/routers/base.router.js';
 import { ScrimService } from '../domain/scrim.service.js';
 import { scrimCreatedComponents } from './scrim.components.js';
-import { handleError } from '@/shared/errors/handle-error.js';
+
 import { prisma } from '@/infra/database.js';
 import { ValidationError } from '@/shared/errors/index.js';
+import { handleError } from '@/shared/errors/handle-error.js';
 
 export class ScrimModal {
   constructor(private readonly scrimService: ScrimService) {}

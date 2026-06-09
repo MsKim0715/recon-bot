@@ -169,14 +169,29 @@ model MatchResult {
   matchId     String @unique
   winnerId    String
   loserId     String
-  homeScore   Int    @default(0)
-  awayScore   Int    @default(0)
+  homeSetsWon   Int    @default(0)
+  awaySetsWon   Int    @default(0)
   submittedBy String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  sets MatchSet[]
+}
+
+model MatchSet {                 
+  id        String @id @default(cuid())
+  resultId  String
+  setNumber Int                  
+  homeScore Int                  
+  awayScore Int                  
+
+  createdAt DateTime @default(now())
+
+  result MatchResult @relation(fields: [resultId], references: [id], onDelete: Cascade)
+
+  @@unique([resultId, setNumber])
 }
 
 model Sanction {

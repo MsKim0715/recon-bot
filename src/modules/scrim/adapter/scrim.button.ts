@@ -2,8 +2,9 @@ import { ButtonInteraction, MessageFlags } from 'discord.js';
 import { Handler } from '@/bot/routers/base.router.js';
 import { ScrimService } from '../domain/scrim.service.js';
 import { scrimListComponents, scrimApplicationsComponents } from './scrim.components.js';
-import { handleError } from '@/shared/errors/handle-error.js';
+
 import { prisma } from '@/infra/database.js';
+import { handleError } from '@/shared/errors/handle-error.js';
 
 export class ScrimButton {
   constructor(private readonly scrimService: ScrimService) {}

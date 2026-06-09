@@ -9,9 +9,10 @@ import { Handler } from '@/bot/routers/base.router.js';
 import { ScrimService } from '../domain/scrim.service.js';
 import { buildScrimCreateModal, buildScrimApplyModal } from './scrim.modal-ui.js';
 import { scrimListComponents, scrimApplicationsComponents } from './scrim.components.js';
-import { handleError } from '@/shared/errors/handle-error.js';
+
 import { prisma } from '@/infra/database.js';
 import { Scrim } from '../domain/scrim.entity.js';
+import { handleError } from '@/shared/errors/handle-error.js';
 
 export const scrimCreateCommandDef = new SlashCommandBuilder()
   .setName(COMMANDS.SCRIM_CREATE)

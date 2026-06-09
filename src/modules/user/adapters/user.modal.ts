@@ -4,8 +4,9 @@ import {
 } from 'discord.js';
 import { Handler } from '@/bot/routers/base.router.js';
 import { UserService } from '../domain/user.service.js';
-import { handleError } from '@/shared/errors/handle-error.js';
+
 import { registerSuccessComponents } from './user.components.js';
+import { handleError } from '@/shared/errors/handle-error.js';
 
 
 export class UserModal{

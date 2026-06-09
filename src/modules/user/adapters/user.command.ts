@@ -7,8 +7,8 @@ import { COMMANDS } from "@/bot/constants/commands.js";
 import { Handler } from "@/bot/routers/base.router.js";
 import { UserService } from "../domain/user.service.js";
 import { buildRegisterModal } from "./user.modal-ui.js";
-import { handleError } from "@/shared/errors/handle-error.js";
 import { profileComponents } from "./user.components.js";
+import { handleError } from "@/shared/errors/handle-error.js";
 
 export const userRegisterCommandDef = new SlashCommandBuilder()
   .setName(COMMANDS.MEMBER_REGISTER)

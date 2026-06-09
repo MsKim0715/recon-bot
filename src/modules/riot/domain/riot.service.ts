@@ -2,10 +2,7 @@ import { guardIsRegistered } from "@/shared/guards/index.js";
 import { RiotApiPort } from "../ports/riot.api.port.js";
 import { RiotRepositoryPort } from "../ports/riot.repository.port.js";
 import { RiotAccount } from "./riot.entity.js";
-import {
-  DuplicateError,
-  NotFoundError,
-} from "@/shared/errors/index.js";
+import { DuplicateError, NotFoundError } from "@/shared/errors/index.js";
 import { RiotRegion } from "@/generated/prisma/index.js";
 
 export class RiotService {
@@ -42,6 +39,11 @@ export class RiotService {
       accountInfo.region,
     );
 
+    const statsInfo = await this.riotApi.fetchRecentStats(
+      accountInfo.puuid,
+      accountInfo.region,
+    );
+
     const riotAccount = new RiotAccount(
       accountInfo.puuid,
       accountInfo.gameName,
@@ -50,9 +52,9 @@ export class RiotService {
       rankInfo?.currentTier ?? null,
       rankInfo?.tierName ?? null,
       rankInfo?.rr ?? null,
-      null,
-      null,
-      rankInfo ? new Date() : null,
+      statsInfo?.winRate ?? null,
+      statsInfo?.kda ?? null,
+      rankInfo || statsInfo ? new Date() : null,
     );
 
     if (existingByUser) {
@@ -83,6 +85,11 @@ export class RiotService {
 
     const rankInfo = await this.riotApi.fetchRank(account.puuid, account.region);
 
+    const statsInfo = await this.riotApi.fetchRecentStats(
+      account.puuid,
+      account.region,
+    );
+
     const updatedAccount = new RiotAccount(
       account.puuid,
       account.gameName,
@@ -91,12 +98,12 @@ export class RiotService {
       rankInfo?.currentTier ?? account.currentTier,
       rankInfo?.tierName ?? account.tierName,
       rankInfo?.rr ?? account.rr,
-      account.winRate,
-      account.kda,
+      statsInfo?.winRate ?? account.winRate,
+      statsInfo?.kda ?? account.kda,
       new Date(),
     );
 
     await this.riotRepo.update(userId, updatedAccount);
-    return updatedAccount;  // 버그1 수정: account → updatedAccount
+    return updatedAccount;
   }
 }

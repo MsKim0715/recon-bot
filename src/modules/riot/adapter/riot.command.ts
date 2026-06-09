@@ -1,13 +1,14 @@
 import {
   SlashCommandBuilder,
   ChatInputCommandInteraction,
-  MessageFlags
+  MessageFlags,
 } from 'discord.js';
 import { COMMANDS } from '@/bot/constants/commands.js';
 import { Handler } from '@/bot/routers/base.router.js';
 import { RiotService } from '../domain/riot.service.js';
 import { buildLinkModal } from './riot.modal-ui.js';
-import { riotStatsEmbed } from './riot.embed.js';
+
+import { riotStatsComponents } from './riot.components.js';
 import { handleError } from '@/shared/errors/handle-error.js';
 
 export const riotLinkCommandDef = new SlashCommandBuilder()
@@ -15,7 +16,6 @@ export const riotLinkCommandDef = new SlashCommandBuilder()
   .setDescription('Link your Riot account')
   .setNameLocalizations({ ko: '계정연동' })
   .setDescriptionLocalizations({ ko: 'Riot 계정을 연동합니다' });
-
 
 export const riotViewCommandDef = new SlashCommandBuilder()
   .setName(COMMANDS.VALORANT_VIEW)
@@ -30,30 +30,30 @@ export class RiotCommand {
     return {
       handle: async (interaction: ChatInputCommandInteraction) => {
         await interaction.showModal(buildLinkModal());
-      }
+      },
     };
   }
-
 
   get view(): Handler<ChatInputCommandInteraction> {
     return {
       handle: async (interaction: ChatInputCommandInteraction) => {
         try {
+          // defer 에는 Ephemeral 만. IsComponentsV2 는 editReply 쪽에 넣어야 적용됨
+          await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-          await interaction.deferReply({ flags : MessageFlags.Ephemeral});
           const account = await this.riotService.getAccount(
             interaction.user.id,
             interaction.guildId!,
           );
 
           await interaction.editReply({
-            embeds: [riotStatsEmbed(interaction.user, account)],
-         
+            components: [riotStatsComponents(interaction.user, account)],
+            flags: MessageFlags.IsComponentsV2,
           });
         } catch (e) {
           await handleError(interaction, e);
         }
-      }
+      },
     };
   }
 }

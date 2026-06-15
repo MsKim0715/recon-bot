@@ -22,7 +22,6 @@ export const riotViewCommandDef = new SlashCommandBuilder()
   .setDescription('View your Valorant stats') 
   .setNameLocalizations({ ko: '전적조회' })
   .setDescriptionLocalizations({ ko: '발로란트 전적을 조회합니다' });
-  console.log("ee");
 
 export class RiotCommand {
   constructor(private readonly riotService: RiotService) {}
@@ -39,7 +38,7 @@ export class RiotCommand {
     return {
       handle: async (interaction: ChatInputCommandInteraction) => {
         try {
-          // defer 에는 Ephemeral 만. IsComponentsV2 는 editReply 쪽에 넣어야 적용됨
+          
           await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
           const account = await this.riotService.getAccount(

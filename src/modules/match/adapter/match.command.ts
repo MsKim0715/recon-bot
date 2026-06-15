@@ -5,27 +5,26 @@ import {
 } from 'discord.js';
 import { COMMANDS } from '@/bot/constants/commands.js';
 import { Handler } from '@/bot/routers/base.router.js';
-import { ScrimService } from '../domain/scrim.service.js';
-import { buildScrimHubPayload } from './scrim.hub.js';
+import { MatchService } from '../domain/match.service.js';
+import { buildMatchHubPayload } from './match.hub.js';
 import { handleError } from '@/shared/errors/handle-error.js';
 
-export const scrimListCommandDef = new SlashCommandBuilder()
-  .setName(COMMANDS.SCRIM_LIST)
-  .setDescription('Open scrim hub')
-  .setNameLocalizations({ ko: '스크림' })
-  .setDescriptionLocalizations({ ko: '스크림 허브를 엽니다' });
+export const matchListCommandDef = new SlashCommandBuilder()
+  .setName(COMMANDS.MATCH_LIST)
+  .setDescription('Open match hub')
+  .setNameLocalizations({ ko: '경기목록' })
+  .setDescriptionLocalizations({ ko: '내 경기 목록을 보고 결과를 입력합니다' });
 
-export class ScrimCommand {
-  constructor(private readonly scrimService: ScrimService) {}
+export class MatchCommand {
+  constructor(private readonly matchService: MatchService) {}
 
-  // 허브: 개인용(ephemeral) 패널 — 모든 스크림 액션의 단일 진입점.
-  // 생성/신청/마감/취소/신청목록/신청취소는 전부 패널 버튼으로 처리한다.
+  // 경기의 단일 진입점(허브). 결과 입력/노쇼/승인/거절을 전부 상태별 버튼으로 처리.
   get list(): Handler<ChatInputCommandInteraction> {
     return {
       handle: async (interaction: ChatInputCommandInteraction) => {
         try {
-          const { components } = await buildScrimHubPayload(
-            this.scrimService,
+          const { components } = await buildMatchHubPayload(
+            this.matchService,
             interaction.guildId!,
             interaction.user.id,
             0,
@@ -38,7 +37,7 @@ export class ScrimCommand {
         } catch (e) {
           await handleError(interaction, e);
         }
-      }
+      },
     };
   }
 }

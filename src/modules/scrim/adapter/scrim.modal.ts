@@ -1,11 +1,14 @@
 import { ModalSubmitInteraction, MessageFlags } from 'discord.js';
 import { Handler } from '@/bot/routers/base.router.js';
 import { ScrimService } from '../domain/scrim.service.js';
-import { scrimCreatedComponents } from './scrim.components.js';
-
+import {
+  scrimCreatedComponents,
+  scrimApplicationNotificationComponents,
+} from './scrim.components.js';
+import { handleError } from '@/shared/errors/handle-error.js';
 import { prisma } from '@/infra/database.js';
 import { ValidationError } from '@/shared/errors/index.js';
-import { handleError } from '@/shared/errors/handle-error.js';
+import { logger } from '@/infra/logger.js';
 
 export class ScrimModal {
   constructor(private readonly scrimService: ScrimService) {}
@@ -76,10 +79,51 @@ export class ScrimModal {
             content: '스크림 신청이 완료됐습니다',
             flags: MessageFlags.Ephemeral
           });
+
+          // 모집팀 리더에게 DM 알림 — 실패해도 신청 자체는 유효하므로 막지 않음
+          await this.notifyRecruiter(interaction, scrimNumber).catch(err =>
+            logger.warn(err, '스크림 신청 알림 DM 실패')
+          );
         } catch (e) {
           await handleError(interaction, e);
         }
       }
     };
+  }
+
+  // 신청 성공 직후 모집팀 리더에게 DM 으로 수락/거절 버튼을 보낸다.
+  private async notifyRecruiter(
+    interaction: ModalSubmitInteraction,
+    scrimNumber: number,
+  ): Promise<void> {
+    const guildId = interaction.guildId!;
+    const scrim = await this.scrimService.getScrimByNumber(scrimNumber, guildId);
+
+    const [recruitingTeam, applicantTeam] = await Promise.all([
+      prisma.team.findUnique({
+        where: { id: scrim.teamId },
+        select: { name: true, leaderId: true },
+      }),
+      prisma.team.findFirst({
+        where: { leaderId: interaction.user.id, guildId },
+        select: { id: true, name: true },
+      }),
+    ]);
+
+    if (!recruitingTeam?.leaderId || !applicantTeam) return;
+
+    const leader = await interaction.client.users.fetch(recruitingTeam.leaderId);
+    await leader.send({
+      flags: MessageFlags.IsComponentsV2,
+      components: [
+        scrimApplicationNotificationComponents(
+          scrim,
+          recruitingTeam.name,
+          applicantTeam.name,
+          applicantTeam.id,
+          guildId,
+        ),
+      ],
+    });
   }
 }

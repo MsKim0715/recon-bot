@@ -23,5 +23,5 @@ export interface RiotApiPort {
   fetchRecentStats(
     puuid: string,
     region: string,
-  ): Promise<RiotStatsInfo | null>; // ← 추가
+  ): Promise<RiotStatsInfo | null>; 
 }

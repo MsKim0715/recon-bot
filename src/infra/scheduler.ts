@@ -1,15 +1,16 @@
 import nodeCron from 'node-cron';
 import { logger } from './logger.js';
-import { schedulerModules } from '@/bot/registry.js';
+import { schedulers } from '@/bot/registry.js';
 
 export function initScheduler(): void {
 
-  schedulerModules.scrim.register();
+  
+  for(const schedule of schedulers){
+    schedule.register();
+  }
 
   // 공통 스케줄
-  nodeCron.schedule('* * * * *', async () => {
-    logger.debug('경기 리마인드 체크');
-  });
+
 
   nodeCron.schedule('*/5 * * * *', async () => {
     logger.debug('노쇼 감지 체크');

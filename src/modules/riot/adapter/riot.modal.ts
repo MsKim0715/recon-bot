@@ -25,7 +25,7 @@ export class RiotModal {
             tagLine,
           );
 
-          // IsComponentsV2 는 editReply 쪽에 넣어야 적용됨
+
           await interaction.editReply({
             components: [riotLinkSuccessComponents(interaction.user, account)],
             flags: MessageFlags.IsComponentsV2,

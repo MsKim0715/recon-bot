@@ -181,6 +181,7 @@ type HubComponent = ContainerBuilder | ActionRowBuilder<ButtonBuilder>;
 export function matchHubComponents(
   matches: MatchView[],
   viewerTeamId: string | null,
+  isLeader: boolean,
   page = 0,
 ): { components: HubComponent[] } {
   const totalPages = Math.ceil(matches.length / PAGE_SIZE) || 1;
@@ -225,7 +226,7 @@ export function matchHubComponents(
     }
     card.addTextDisplayComponents(new TextDisplayBuilder().setContent(body));
 
-    if (m.status === 'SCHEDULED') {
+    if (isLeader && m.status === 'SCHEDULED') {
       card.addActionRowComponents(
         new ActionRowBuilder<ButtonBuilder>().addComponents(
           new ButtonBuilder()
@@ -238,7 +239,7 @@ export function matchHubComponents(
             .setStyle(ButtonStyle.Danger),
         ),
       );
-    } else if (m.status === 'ONGOING') {
+    } else if (isLeader && m.status === 'ONGOING') {
       const iSubmitted =
         m.result !== null && viewerTeamId !== null && m.result.submittedBy === viewerTeamId;
       if (iSubmitted) {
@@ -261,12 +262,32 @@ export function matchHubComponents(
       }
     }
     // COMPLETED / NO_SHOW / CANCELLED → 버튼 없이 결과만
+    // (멤버 viewer 는 isLeader=false 라 위 액션 버튼이 전부 생략됨 → 읽기 전용)
 
     components.push(card);
   }
 
   components.push(pageRow(page, totalPages));
   return { components };
+}
+
+// 무소속 viewer 용 — 경기 대신 안내
+export function matchNoTeamComponents(): { components: HubComponent[] } {
+  return {
+    components: [
+      new ContainerBuilder()
+        .setAccentColor(0x5865f2)
+        .addTextDisplayComponents(new TextDisplayBuilder().setContent('## 내 경기'))
+        .addSeparatorComponents(
+          new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
+        )
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            '소속된 팀이 없습니다.\n`/팀` 에서 팀을 만들거나 가입하세요.',
+          ),
+        ),
+    ],
+  };
 }
 
 

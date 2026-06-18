@@ -189,4 +189,15 @@ export class MatchService {
       '노쇼 처리(상대 팀 노쇼 카운트 +1)',
     );
   }
+
+  async getTeamMatchContext(
+    discordId: string,
+    guildId: string,
+  ): Promise<{ teamId: string; isLeader: boolean; matches: MatchView[] } | null> {
+    const team = await this.repo.findTeamOfMember(discordId, guildId);
+    if (!team) return null;
+ 
+    const matches = await this.repo.findMatchesByTeam(team.id);
+    return { teamId: team.id, isLeader: team.isLeader, matches };
+  }
 }

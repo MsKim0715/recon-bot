@@ -12,7 +12,19 @@ import {
 } from "@/generated/prisma/index.js";
 
 export class PrismaTeamRepository implements TeamRepositoryPort {
-  private async resolveUserId(discordId: string, guildId: string): Promise<string | null> {
+  async hasActiveMatch(teamId: string): Promise<boolean> {
+    const count = await prisma.match.count({
+      where: {
+        OR: [{ homeTeamId: teamId }, { awayTeamId: teamId }],
+        status: { in: ["SCHEDULED", "ONGOING"] },
+      },
+    });
+    return count > 0;
+  }
+  private async resolveUserId(
+    discordId: string,
+    guildId: string,
+  ): Promise<string | null> {
     const user = await prisma.user.findUnique({
       where: { discordId_guildId: { discordId, guildId } },
       select: { id: true },
@@ -47,7 +59,10 @@ export class PrismaTeamRepository implements TeamRepositoryPort {
     return this.toEntity(data);
   }
 
-  async findByLeaderId(leaderId: string, guildId: string): Promise<Team | null> {
+  async findByLeaderId(
+    leaderId: string,
+    guildId: string,
+  ): Promise<Team | null> {
     const data = await prisma.team.findFirst({ where: { leaderId, guildId } });
     if (!data) return null;
     return this.toEntity(data);
@@ -58,13 +73,22 @@ export class PrismaTeamRepository implements TeamRepositoryPort {
     return data.map(this.toEntity.bind(this));
   }
 
-  async findDetailByLeaderId(leaderId: string, guildId: string): Promise<TeamDetailData | null> {
+  async findDetailByLeaderId(
+    leaderId: string,
+    guildId: string,
+  ): Promise<TeamDetailData | null> {
     const data = await prisma.team.findFirst({
       where: { leaderId, guildId },
       include: {
         members: { include: { user: { include: { riotAccount: true } } } },
-        homeMatches: { where: { status: "COMPLETED" }, include: { result: true } },
-        awayMatches: { where: { status: "COMPLETED" }, include: { result: true } },
+        homeMatches: {
+          where: { status: "COMPLETED" },
+          include: { result: true },
+        },
+        awayMatches: {
+          where: { status: "COMPLETED" },
+          include: { result: true },
+        },
       },
     });
     if (!data) return null;
@@ -80,12 +104,14 @@ export class PrismaTeamRepository implements TeamRepositoryPort {
     const tieredMembers = members.filter((m) => m.currentTier !== null);
     const avgTier =
       tieredMembers.length > 0
-        ? tieredMembers.reduce((sum, m) => sum + (m.currentTier ?? 0), 0) / tieredMembers.length
+        ? tieredMembers.reduce((sum, m) => sum + (m.currentTier ?? 0), 0) /
+          tieredMembers.length
         : null;
     const avgTierRounded = avgTier !== null ? Math.round(avgTier) : null;
     const avgTierName =
       avgTierRounded !== null
-        ? (tieredMembers.find((m) => m.currentTier === avgTierRounded)?.tierName ?? null)
+        ? (tieredMembers.find((m) => m.currentTier === avgTierRounded)
+            ?.tierName ?? null)
         : null;
 
     const winCount = [
@@ -136,7 +162,11 @@ export class PrismaTeamRepository implements TeamRepositoryPort {
     return count > 0;
   }
 
-  async removeMember(teamId: string, discordId: string, guildId: string): Promise<void> {
+  async removeMember(
+    teamId: string,
+    discordId: string,
+    guildId: string,
+  ): Promise<void> {
     const userId = await this.resolveUserId(discordId, guildId);
     if (!userId) throw new Error("유저를 찾을 수 없습니다");
     await prisma.teamMember.delete({
@@ -148,7 +178,10 @@ export class PrismaTeamRepository implements TeamRepositoryPort {
     return prisma.teamMember.count({ where: { teamId } });
   }
 
-  async isMemberOfAnyTeam(discordId: string, guildId: string): Promise<boolean> {
+  async isMemberOfAnyTeam(
+    discordId: string,
+    guildId: string,
+  ): Promise<boolean> {
     const count = await prisma.teamMember.count({
       where: { user: { discordId, guildId }, team: { guildId } },
     });
@@ -187,7 +220,11 @@ export class PrismaTeamRepository implements TeamRepositoryPort {
     ]);
   }
 
-  async acceptApplicationTx(teamId: string, applicantDiscordId: string, guildId: string): Promise<void> {
+  async acceptApplicationTx(
+    teamId: string,
+    applicantDiscordId: string,
+    guildId: string,
+  ): Promise<void> {
     const userId = await this.resolveUserId(applicantDiscordId, guildId);
     if (!userId) throw new Error("유저를 찾을 수 없습니다");
     await prisma.$transaction([
@@ -201,22 +238,33 @@ export class PrismaTeamRepository implements TeamRepositoryPort {
     ]);
   }
 
-  async leaveTeamByDiscordId(discordId: string, guildId: string): Promise<void> {
+  async leaveTeamByDiscordId(
+    discordId: string,
+    guildId: string,
+  ): Promise<void> {
     const member = await prisma.teamMember.findFirst({
       where: { user: { discordId, guildId }, team: { guildId } },
       select: { teamId: true, userId: true },
     });
     if (!member) throw new Error("소속 팀을 찾을 수 없습니다");
     await prisma.teamMember.delete({
-      where: { teamId_userId: { teamId: member.teamId, userId: member.userId } },
+      where: {
+        teamId_userId: { teamId: member.teamId, userId: member.userId },
+      },
     });
-    const count = await prisma.teamMember.count({ where: { teamId: member.teamId } });
+    const count = await prisma.teamMember.count({
+      where: { teamId: member.teamId },
+    });
     if (count === 0) {
       await prisma.team.delete({ where: { id: member.teamId } });
     }
   }
 
-  async createApplication(teamId: string, discordId: string, guildId: string): Promise<void> {
+  async createApplication(
+    teamId: string,
+    discordId: string,
+    guildId: string,
+  ): Promise<void> {
     const userId = await this.resolveUserId(discordId, guildId);
     if (!userId) throw new Error("유저를 찾을 수 없습니다");
     await prisma.teamApplication.create({
@@ -227,36 +275,48 @@ export class PrismaTeamRepository implements TeamRepositoryPort {
   async findApplications(teamId: string): Promise<TeamApplicationData[]> {
     const apps = await prisma.teamApplication.findMany({
       where: { teamId, status: "PENDING" },
-      include: { user: { select: { discordId: true } } },
+      include: { user: { select: { discordId: true, username: true } } },
     });
     return apps.map((a) => ({
       id: a.id,
       teamId: a.teamId,
       userId: a.user.discordId,
+      username: a.user.username,
       guildId: a.guildId,
       status: a.status,
       createdAt: a.createdAt,
     }));
   }
 
-  async findApplication(teamId: string, discordId: string): Promise<TeamApplicationData | null> {
+  async findApplication(
+    teamId: string,
+    discordId: string,
+  ): Promise<TeamApplicationData | null> {
     const a = await prisma.teamApplication.findFirst({
       where: { teamId, user: { discordId } },
-      include: { user: { select: { discordId: true } } },
+      include: { user: { select: { discordId: true, username: true } } },
     });
     if (!a) return null;
     return {
       id: a.id,
       teamId: a.teamId,
       userId: a.user.discordId,
+      username: a.user.username,
       guildId: a.guildId,
       status: a.status,
       createdAt: a.createdAt,
     };
   }
 
-  async updateApplicationStatus(teamId: string, discordId: string, status: ApplicationStatus): Promise<void> {
-    const guildTeam = await prisma.team.findUnique({ where: { id: teamId }, select: { guildId: true } });
+  async updateApplicationStatus(
+    teamId: string,
+    discordId: string,
+    status: ApplicationStatus,
+  ): Promise<void> {
+    const guildTeam = await prisma.team.findUnique({
+      where: { id: teamId },
+      select: { guildId: true },
+    });
     if (!guildTeam) throw new Error("팀을 찾을 수 없습니다");
     const userId = await this.resolveUserId(discordId, guildTeam.guildId);
     if (!userId) throw new Error("유저를 찾을 수 없습니다");

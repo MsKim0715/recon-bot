@@ -158,9 +158,9 @@ model Match {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  scrim    Scrim        @relation(fields: [scrimId], references: [id])
-  homeTeam Team         @relation("HomeTeam", fields: [homeTeamId], references: [id])
-  awayTeam Team         @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  scrim    Scrim        @relation(fields: [scrimId], references: [id], onDelete: Cascade)
+  homeTeam Team         @relation("HomeTeam", fields: [homeTeamId], references: [id], onDelete: Cascade)
+  awayTeam Team         @relation("AwayTeam", fields: [awayTeamId], references: [id], onDelete: Cascade)
   result   MatchResult?
 }
 

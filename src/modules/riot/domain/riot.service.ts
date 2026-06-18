@@ -4,6 +4,15 @@ import { RiotRepositoryPort } from "../ports/riot.repository.port.js";
 import { RiotAccount } from "./riot.entity.js";
 import { DuplicateError, NotFoundError } from "@/shared/errors/index.js";
 import { RiotRegion } from "@/generated/prisma/index.js";
+import { logger } from "@/infra/logger.js";
+
+// Henrik 레이트리밋: 분당 30콜. 갱신 1건당 2콜(fetchRank + fetchRecentStats)
+// → 분당 최대 15건 → 건 사이 4초 간격. (실제 호출 지연이 더해져 30/min 밑으로 안전하게 떨어짐)
+const RATE_LIMIT_PER_MIN = 30;
+const CALLS_PER_ACCOUNT = 2;
+const SYNC_DELAY_MS = Math.ceil(60_000 / (RATE_LIMIT_PER_MIN / CALLS_PER_ACCOUNT)); // 4000
+
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 export class RiotService {
   constructor(
@@ -83,8 +92,16 @@ export class RiotService {
       }
     }
 
-    const rankInfo = await this.riotApi.fetchRank(account.puuid, account.region);
+    return this.refreshAccount(userId, account);
+  }
 
+  // 단일 계정 강제 갱신: rank/stats 재조회 → 저장. (getAccount·스케줄러 공용)
+  // 캐시/권한 체크 없음 — 호출 측에서 판단.
+  private async refreshAccount(
+    userId: string,
+    account: RiotAccount,
+  ): Promise<RiotAccount> {
+    const rankInfo = await this.riotApi.fetchRank(account.puuid, account.region);
     const statsInfo = await this.riotApi.fetchRecentStats(
       account.puuid,
       account.region,
@@ -105,5 +122,35 @@ export class RiotService {
 
     await this.riotRepo.update(userId, updatedAccount);
     return updatedAccount;
+  }
+
+  // 전 유저 전적 일괄 갱신 (스케줄러용).
+  // 레이트리밋 회피: 순차 처리 + 건 사이 딜레이. 한 건 실패해도 다음 진행.
+  async syncAllAccounts(): Promise<{ total: number; ok: number; failed: number }> {
+    const accounts = await this.riotRepo.findAllWithUserIds();
+
+    let ok = 0;
+    let failed = 0;
+
+    for (let i = 0; i < accounts.length; i++) {
+      const { userId, account } = accounts[i];
+      try {
+        await this.refreshAccount(userId, account);
+        ok += 1;
+      } catch (e) {
+        failed += 1;
+        logger.warn(
+          { userId, puuid: account.puuid, err: e instanceof Error ? e.message : e },
+          "전적 갱신 실패(스킵)",
+        );
+      }
+
+      // 마지막 건 뒤에는 대기 불필요
+      if (i < accounts.length - 1) {
+        await sleep(SYNC_DELAY_MS);
+      }
+    }
+
+    return { total: accounts.length, ok, failed };
   }
 }

@@ -5,6 +5,7 @@ export interface TeamApplicationData {
   id: string;
   teamId: string;
   userId: string;
+  username : string;
   guildId: string;
   status: string;
   createdAt: Date;
@@ -51,4 +52,5 @@ export interface TeamRepositoryPort {
   findApplication(teamId: string, discordId: string): Promise<TeamApplicationData | null>;
   updateApplicationStatus(teamId: string, discordId: string, status: ApplicationStatus): Promise<void>;
   existsApplication(teamId: string, discordId: string): Promise<boolean>;
+  hasActiveMatch(teamId: string): Promise<boolean>;
 }

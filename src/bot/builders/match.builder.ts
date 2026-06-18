@@ -23,7 +23,6 @@ export function buildMatchModule(): DiscordModule {
     commands: [
       { name: COMMANDS.MATCH_LIST, def: matchListCommandDef, handler: command.list },
     ],
-    // 결과 모달 유지 — [결과 입력] 버튼이 연다
     modals: [{ id: MODALS.MATCH_RESULT, handler: modal.result }],
     buttons: [
       { id: BUTTONS.MATCH_APPROVE,     handler: button.approve },

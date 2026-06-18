@@ -5,6 +5,13 @@ import { prisma } from "@/infra/database.js";
 import { RiotAccount as PrismaRiotAccount } from "@/generated/prisma/index.js";
 
 export class PrismaRiotRepository implements RiotRepositoryPort {
+  async findAllWithUserIds(): Promise<
+    { userId: string; account: RiotAccount }[]
+  > {
+    const rows = await prisma.riotAccount.findMany();
+    return rows.map((r) => ({ userId: r.userId, account: this.toEntity(r) }));
+  }
+
   async findByUserId(userId: string): Promise<RiotAccount | null> {
     const data = await prisma.riotAccount.findUnique({ where: { userId } });
     if (!data) return null;

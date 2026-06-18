@@ -10,6 +10,7 @@ import {
   riotViewCommandDef,
 } from "@/modules/riot/adapter/riot.command.js";
 import { RiotModal } from "@/modules/riot/adapter/riot.modal.js";
+import { RiotScheduler } from "@/modules/riot/adapter/riot.scheduler.js";
 
 export function buildRiotModule(): DiscordModule {
   const riotApi = new henrikApiApdater();
@@ -17,6 +18,7 @@ export function buildRiotModule(): DiscordModule {
   const service = new RiotService(riotRepo, riotApi);
   const command = new RiotCommand(service);
   const modal = new RiotModal(service);
+  const scheduler = new RiotScheduler(service);
 
   return {
     commands: [
@@ -24,5 +26,6 @@ export function buildRiotModule(): DiscordModule {
       { name: COMMANDS.VALORANT_VIEW, def: riotViewCommandDef, handler: command.view },
     ],
     modals: [{ id: MODALS.VALORANT_LINK, handler: modal.link }],
+    scheduler,
   };
 }

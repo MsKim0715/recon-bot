@@ -8,6 +8,7 @@ const EnvSchema = z.object({
   DISCORD_GUILD_ID : z.string().min(1),
   DATABASE_URL: z.string().min(1),
   HENRIK_API_KEY: z.string().optional(),
+  WELCOME_CHANNEL_ID: z.string().optional(),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 });
 

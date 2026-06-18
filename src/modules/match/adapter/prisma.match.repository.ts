@@ -171,4 +171,17 @@ export class PrismaMatchRepository implements MatchRepositoryPort {
       result: data.result ? this.toResult(data.result) : null,
     };
   }
+
+  async findTeamOfMember(
+    discordId: string,
+    guildId: string,
+  ): Promise<{ id: string; isLeader: boolean } | null> {
+    const m = await prisma.teamMember.findFirst({
+      where: { user: { discordId, guildId }, team: { guildId } },
+      select: { role: true, teamId: true },
+    });
+    if (!m) return null;
+    return { id: m.teamId, isLeader: m.role === 'LEADER' };
+  }
+ 
 }

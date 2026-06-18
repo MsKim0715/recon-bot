@@ -2,6 +2,7 @@
 import { client } from "./bot.client.js";
 import { InteractionDispatcher } from "../dispatcher/interaction.dispatcher.js";
 import { handleReady } from "../events/ready.js";
+import { handleGuildMemberAdd } from "../events/guildMemberAdd.js";
 import {
   autocompleteEntries,
   buttonEntries,
@@ -51,6 +52,7 @@ function registerEvents() {
   });
   client.once("clientReady", (c) => handleReady(c));
   client.on("interactionCreate", createInteractionHandler(dispatcher));
+  client.on("guildMemberAdd", (member) => handleGuildMemberAdd(member));
 }
 
 export function setupBot() {

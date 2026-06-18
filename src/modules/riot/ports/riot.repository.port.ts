@@ -9,4 +9,5 @@ export interface RiotRepositoryPort{
     update(userId : string, account : RiotAccount) : Promise<void>;
     delete(userId : string) : Promise<void>;
     resolveUserId(discordId: string, guildId: string): Promise<string | null>;
+    findAllWithUserIds(): Promise<{ userId: string; account: RiotAccount }[]>;
 }

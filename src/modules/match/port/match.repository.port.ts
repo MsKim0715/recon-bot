@@ -1,4 +1,4 @@
-import type { Match } from '../domain/match.entity.js';
+import type { Match } from "../domain/match.entity.js";
 
 export interface TeamRef {
   id: string;
@@ -60,4 +60,9 @@ export interface MatchRepositoryPort {
   rejectResultTx(matchId: string): Promise<void>;
   // 노쇼: Match 상태 NO_SHOW + 상대 팀 noShowCount +1
   noShowTx(matchId: string, penalizedTeamId: string): Promise<void>;
+
+  findTeamOfMember(
+    discordId: string,
+    guildId: string,
+  ): Promise<{ id: string; isLeader: boolean } | null>;
 }

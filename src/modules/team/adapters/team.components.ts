@@ -232,7 +232,7 @@ export function teamApplicationsComponents(applications: TeamApplicationData[]) 
   applications.forEach(app => {
     container.addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        `**유저 ID:** ${app.userId}\n` +
+        `**유저 ID:** ${app.username}\n` +
         `**신청일:** ${app.createdAt.toLocaleDateString()}`
       )
     );
